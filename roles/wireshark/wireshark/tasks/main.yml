@@ -2,7 +2,7 @@
 # Title:            Community: Wireshark                                #
 # Author(s):        Not@RealEmail                                       #
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  ffeldhaus/docker-network-traffic-analyzer           #
+# Docker Image(s):  ffeldhaus/wireshark                                 #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
@@ -18,40 +18,37 @@
 
 - name: Stop and remove any existing container
   docker_container:
-    name: mylar
+    name: wireshark
     state: absent
 
-- name: Create mylar directories
+- name: Create wireshark directories
   file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
   with_items:
-    - /opt/mylar
-    - /mnt/local/Media/Comics
+    - /opt/wireshark
 
 - name: Create and start container
   docker_container:
-    name: mylar
-    image: linuxserver/mylar
+    name: wireshark
+    image: ffeldhaus/wireshark
     pull: yes
     published_ports:
-      - "127.0.0.1:8090:8090"
+      - "127.0.0.1:14500:14500"
     env:
       TZ: "{{ tz }}"
       PUID: "{{ uid }}"
       PGID: "{{ gid }}"
-      VIRTUAL_HOST: "mylar.{{ user.domain }}"
-      VIRTUAL_PORT: "8090"
-      LETSENCRYPT_HOST: "mylar.{{ user.domain }}"
+      VIRTUAL_HOST: "shark.{{ user.domain }}"
+      VIRTUAL_PORT: "14500"
+      LETSENCRYPT_HOST: "shark.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
     volumes:
-      - "/opt/mylar:/config"
-      - "/mnt/local/downloads/nzbs:/downloads/nzbs"
-      - "/mnt/unionfs/Media/Comics:/comics"
+      - "/opt/wireshark:/config"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
       - name: cloudbox
         aliases:
-          - mylar
+          - wireshark
     purge_networks: yes
     restart_policy: unless-stopped
     state: started
